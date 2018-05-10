@@ -494,4 +494,4 @@ if __name__ == "__main__":
     plt.ylabel('count')
     plt.plot(countings, label='x')
     plt.legend()
-    plt.show()
+    p

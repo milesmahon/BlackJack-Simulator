@@ -1,3 +1,21 @@
+PARRONDO'S PARADOX
+=============================================
+
+A fork of seblau's BlackJack-Simulator as a demonstration of Parrondo's Paradox.
+
+Parrondo's Paradox describes a situation in which two losing strategies combine to form a winning strategy.
+It was conceived in the field of game theory but has applications in fields from evolutionary biology to economics. 
+
+In this case, the demonstration starts with a demo of a basic game of Blackjack where the player bets $1 each time. With card counting and basic Blackjack strategy, the player wins a large sum of money. 
+
+The second part shows a game imagined by Michael J. Stutzer from UC Boulder, described in his paper "A Simple Parrondo Paradox." In the game, the player starts with $10,000 and bets 5% of their money every round. Even with card counting, which gives the player a theoretic edge, the player surprisingly loses money in the long run. The simulation demonstrates what Micahel Stutzer proved to be true in theory in his paper. 
+
+Finally, the game demonstrates Parrondo's paradox: the player plays exactly the same way, but plays two hands at the same time. Stutzer theorizes that the additional possibility, that instead of simply losing or winning 5% the player can break even (losing one hand and winning the other), causes a positive outcome. And indeed the simulation demonstrates this. 
+
+See original README by seblau below for details on the specifics of the Blackjack simulation and card counting.
+==============================================
+
+
 BlackJack-Simulator with OMEGA II Card Counting
 ==============================================
 

@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 
 from importer.StrategyImporter import StrategyImporter
 
-
-GAMES = 20000
 SHOE_SIZE = 6
 SHOE_PENETRATION = 0.25
 BET_SPREAD = 20.0
@@ -108,6 +106,7 @@ class Shoe(object):
         """
         Returns: The current true count.
         """
+	if db: print self.count / (self.decks * self.shoe_penetration()) 
         return self.count / (self.decks * self.shoe_penetration())
 
     def shoe_penetration(self):
@@ -257,7 +256,7 @@ class Player(object):
 
     def play(self, shoe):
         for hand in self.hands:
-            # print "Playing Hand: %s" % hand
+            if db: print "Playing Hand: %s" % hand
             self.play_hand(hand, shoe)
 
     def play_hand(self, hand, shoe):
@@ -276,7 +275,7 @@ class Player(object):
 
             if flag == 'D':
                 if hand.length() == 2:
-                    # print "Double Down"
+                    if db: print "Double Down"
                     hand.doubled = True
                     self.hit(hand, shoe)
                     break
@@ -285,7 +284,7 @@ class Player(object):
 
             if flag == 'Sr':
                 if hand.length() == 2:
-                    # print "Surrender"
+                    if db: print "Surrender"
                     hand.surrender = True
                     break
                 else:
@@ -303,11 +302,11 @@ class Player(object):
     def hit(self, hand, shoe):
         c = shoe.deal()
         hand.add_card(c)
-        # print "Hitted: %s" % c
+        if db: print "Hitted: %s" % c
 
     def split(self, hand, shoe):
         self.hands.append(hand.split())
-        # print "Splitted %s" % hand
+        if db: print "Splitted %s" % hand
         self.play_hand(hand, shoe)
 
 
@@ -328,43 +327,7 @@ class Dealer(object):
     def hit(self, shoe):
         c = shoe.deal()
         self.hand.add_card(c)
-        # print "Dealer hitted: %s" %c
-
-    # Returns an array of 6 numbers representing the probability that the final score of the dealer is
-    # [17, 18, 19, 20, 21, Busted] '''
-    # TODO Differentiate 21 and BJ
-    # TODO make an actual tree, this is false AF
-    def get_probabilities(self) :
-        start_value = self.hand.value
-        # We'll draw 5 cards no matter what an count how often we got 17, 18, 19, 20, 21, Busted
-
-class Tree(object):
-    """
-    A tree that opens with a statistical card and changes as a new
-    statistical card is added. In this context, a statistical card is a list of possible values, each with a probability.
-    e.g : [2 : 0.05, 3 : 0.1, ..., 22 : 0.1]
-    Any value above 21 will be truncated to 22, which means 'Busted'.
-    """
-    #TODO to test
-    def __init__(self, start=[]):
-        self.tree = []
-        self.tree.append(start)
-
-    def add_a_statistical_card(self, stat_card):
-        # New set of leaves in the tree
-        leaves = []
-        for p in self.tree[-1] :
-            for v in stat_card :
-                new_value = v + p
-                proba = self.tree[-1][p]*stat_card[v]
-                if (new_value > 21) :
-                    # All busted values are 22
-                    new_value = 22
-                if (new_value in leaves) :
-                    leaves[new_value] = leaves[new_value] + proba
-                else :
-                    leaves[new_value] = proba
-
+        if db: print "Dealer hitted: %s" %c
 
 class Game(object):
     """
@@ -372,7 +335,7 @@ class Game(object):
     """
     def __init__(self):
         self.shoe = Shoe(SHOE_SIZE)
-        self.money = 0.0
+        self.money = 10000 # start with 10k
         self.bet = 0.0
         self.stake = 1.0
         self.player = Player()
@@ -380,7 +343,7 @@ class Game(object):
 
     def get_hand_winnings(self, hand):
         win = 0.0
-        bet = self.stake
+	bet = self.stake
         if not hand.surrender:
             if hand.busted():
                 status = "LOST"
@@ -404,47 +367,110 @@ class Game(object):
         else:
             status = "SURRENDER"
 
-        if status == "LOST":
-            win += -1
-        elif status == "WON":
-            win += 1
-        elif status == "WON 3:2":
-            win += 1.5
-        elif status == "SURRENDER":
-            win += -0.5
-        if hand.doubled:
-            win *= 2
-            bet *= 2
+	if stutzer_mode: # bet 5% of money on each hand 
+ 	    # in an attempt to make stutzer's strat more consistently losing,
+	    # this game removes surrendering and 3:2 odds
+	    if strict_rules:
+	        bet *= (self.get_money()*0.05) # bet 5% of your money
+	        if status == "LOST":
+                    win += -bet
+                elif status == "WON":
+                    win += bet
+                elif status == "WON 3:2":
+                    win += bet
+                elif status == "SURRENDER":
+                    win += -bet
+    	        else: 
+    	            if db: 
+    	        	    print "STATUS == 0"
+                    if hand.doubled:
+                        win *= 2
+                        bet *= 2
+	    else:
+	        bet *= (self.get_money()*0.05) # bet 5% of your money
+	        if status == "LOST":
+                    win += -bet
+                elif status == "WON":
+                    win += bet
+                elif status == "WON 3:2":
+                    win += 1.5 * bet
+                elif status == "SURRENDER":
+                    win += -0.5 * bet
+    	        else: 
+    	            if db: 
+    	        	    print "STATUS == 0"
+                    if hand.doubled:
+                        win *= 2
+                        bet *= 2
+	    #bet *= self.stake
+	else: # original mode not relevant to this paper
+            if status == "LOST":
+                win += -1
+            elif status == "WON":
+                win += 1
+            elif status == "WON 3:2":
+                win += 1.5
+            elif status == "SURRENDER":
+                win += -0.5
+            if hand.doubled:
+                win *= 2
+                bet *= 2
+	    win *= self.stake
 
-        win *= self.stake
-
+	if db: print(status + " Hand: " + str(hand))
+	
+	if db: print("WIN: " + str(win) + " BET: " + str(bet))
         return win, bet
 
     def play_round(self):
-        if self.shoe.truecount() > 6:
-            self.stake = BET_SPREAD
+        # this is the ONLY place where we bet based on count
+	if card_counting:
+	    if self.shoe.truecount() > 6:
+                self.stake = BET_SPREAD
+	    else:
+	    	self.stake = 1.0
         else:
             self.stake = 1.0
 
-        player_hand = Hand([self.shoe.deal(), self.shoe.deal()])
+        player_hand = Hand([self.shoe.deal(), self.shoe.deal()])	
         dealer_hand = Hand([self.shoe.deal()])
         self.player.set_hands(player_hand, dealer_hand)
         self.dealer.set_hand(dealer_hand)
-        # print "Dealer Hand: %s" % self.dealer.hand
-        # print "Player Hand: %s\n" % self.player.hands[0]
+
+	# for parrondo's paradox, we will play two hands simultaneously
+	if parrondo_mode:
+	    second_player_hand = Hand([self.shoe.deal(), self.shoe.deal()])
+	    self.player.hands.append(second_player_hand)
+
+        if db: print "Dealer Hand: %s" % self.dealer.hand
+        if db: print "Player Hand: %s\n" % self.player.hands[0]
 
         self.player.play(self.shoe)
         self.dealer.play(self.shoe)
 
-        # print ""
+        if db: print ""
+	if db: print("Money before: " + str(self.money))
 
-        for hand in self.player.hands:
+	winnings = 0 # add winnings to self.money after ALL hands played
+		     # since bet for a hand is dependent on self.money
+        bettings = 0 
+#      	print("Player hands:")
+#	for i in range(len(self.player.hands)):
+#	    print(self.player.hands[i])
+#	print("Dealer Hand:") 
+#	print(dealer_hand)
+
+	for hand in self.player.hands:
             win, bet = self.get_hand_winnings(hand)
-            self.money += win
-            self.bet += bet
-            # print "Player Hand: %s %s (Value: %d, Busted: %r, BlackJack: %r, Splithand: %r, Soft: %r, Surrender: %r, Doubled: %r)" % (hand, status, hand.value, hand.busted(), hand.blackjack(), hand.splithand, hand.soft(), hand.surrender, hand.doubled)
+            winnings += win
+	    bettings += bet
+            if db: print "Player Hand: %s (Value: %s, Busted: %d, BlackJack: %r, Splithand: %r, Soft: %r, Surrender: %r, Doubled: %r)" % (hand, hand.value, hand.busted(), hand.blackjack(), hand.splithand, hand.soft(), hand.surrender, hand.doubled)
 
-        # print "Dealer Hand: %s (%d)" % (self.dealer.hand, self.dealer.hand.value)
+        self.money += winnings
+	self.bet += bettings
+
+	if db: print "Dealer Hand: %s (%d)" % (self.dealer.hand, self.dealer.hand.value)
+	if db: print "Bet: " + str(bettings) + " Money after: " + str(self.get_money())
 
     def get_money(self):
         return self.money
@@ -453,45 +479,126 @@ class Game(object):
         return self.bet
 
 
+def run_game():
+	moneys = []
+        bets = []
+        countings = []
+        nb_hands = 0
+        for g in range(GAMES):
+            game = Game()
+            while not game.shoe.reshuffle:
+                # print '%s GAME no. %d %s' % (20 * '#', i + 1, 20 * '#')
+                game.play_round()
+                nb_hands += 1
+
+            moneys.append(game.get_money())
+            bets.append(game.get_bet())
+            countings += game.shoe.count_history
+
+            if see_results: print("WIN for Game no. %d: %s (%s bet)" % (g + 1, "{0:.2f}".format(game.get_money()), "{0:.2f}".format(game.get_bet())))
+
+        sume = 0.0
+        total_bet = 0.0
+        for value in moneys:
+            sume += value
+        for value in bets:
+            total_bet += value
+
+        init_money = 0
+        if stutzer_mode:
+            init_money = 10000*GAMES # money you started with
+
+        print "\n%d hands overall, %0.2f hands per game on average" % (nb_hands, float(nb_hands) / GAMES)
+        print "%0.2f total bet" % total_bet
+        # print("Init money" + str(init_money))
+        print("Overall winnings: {} (edge = {} %)".format("{0:.2f}".format(sume), "{0:.3f}".format(100.0*(sume-init_money)/total_bet)))
+
+        # graph of winnings
+        #moneys = sorted(moneys)
+        #fit = stats.norm.pdf(moneys, np.mean(moneys), np.std(moneys))
+        #pl.plot(moneys, fit, '-o')
+        #pl.hist(moneys, normed=True)
+        #pl.show()
+
+        # a graph of the frequency of each card count
+        #plt.ylabel('count')
+        #plt.plot(countings, label='x')
+        #plt.legend()
+        #plt.show()
+
+	return (100.0*(sume-init_money)/total_bet)
+
+
+# =======DEMO SECTION=======
 if __name__ == "__main__":
     importer = StrategyImporter(sys.argv[1])
     HARD_STRATEGY, SOFT_STRATEGY, PAIR_STRATEGY = importer.import_player_strategy()
+        
+    db = False
+    see_results = False
+    strict_rules = True
+    card_counting = True
+    GAMES = 100000
+    
+    # BEGIN DEMO
+    
+    # BASIC GAME
+    print("Beginning demonstration of Parrondo's paradox")
+    print("If you find that the demo is taking too long, you can set GAMES lower, but be aware the results will be much less accurate. We recommend GAMES > 100000")
+    print("Each section takes a little under 5 minutes if GAMES == 100000")
+    print("")
 
-    moneys = []
-    bets = []
-    countings = []
-    nb_hands = 0
-    for g in range(GAMES):
-        game = Game()
-        while not game.shoe.reshuffle:
-            # print '%s GAME no. %d %s' % (20 * '#', i + 1, 20 * '#')
-            game.play_round()
-            nb_hands += 1
+    print("=======BASIC GAME=======") 
+    print("First, a game of Blackjack:")
+    print("Player bets $1 every round. Bets more if count is high.") 
 
-        moneys.append(game.get_money())
-        bets.append(game.get_bet())
-        countings += game.shoe.count_history
+    parrondo_mode = False
+    stutzer_mode = False
+   
+    print("")
+    print("Running...")
+    if (run_game() > 0):	
+	print("")
+    	print("Notice this is a positive outcome")
+	print("The player uses basic strategy and card counting to achieve a positive outcome")
+    else:
+    	print("")
+    	print("OOPS; this should have been a positive outcome")
 
-        print("WIN for Game no. %d: %s (%s bet)" % (g + 1, "{0:.2f}".format(game.get_money()), "{0:.2f}".format(game.get_bet())))
+    
+    # STUTZER GAME
+    print("=======STUTZER'S GAME=======")
+    print("Next, we demo Michael Stutzer's game:")
+    print("Player starts with $10000 and bets 5% of their money each round")
 
-    sume = 0.0
-    total_bet = 0.0
-    for value in moneys:
-        sume += value
-    for value in bets:
-        total_bet += value
+    stutzer_mode = True
 
-    print "\n%d hands overall, %0.2f hands per game on average" % (nb_hands, float(nb_hands) / GAMES)
-    print "%0.2f total bet" % total_bet
-    print("Overall winnings: {} (edge = {} %)".format("{0:.2f}".format(sume), "{0:.3f}".format(100.0*sume/total_bet)))
+    print("")
+    print("Running...")
+    if (run_game() < 0):
+    	print("")
+	print("Notice this is a negative outcome")
+	print("The player uses the same basic strategy and card counting as in the basic game but still has a negative outcome due to their betting strategy")
+    else:
+	print("")
+    	print("OOPS; this should have been a negative outcome")
 
-    moneys = sorted(moneys)
-    fit = stats.norm.pdf(moneys, np.mean(moneys), np.std(moneys))  # this is a fitting indeed
-    pl.plot(moneys, fit, '-o')
-    pl.hist(moneys, normed=True)
-    pl.show()
 
-    plt.ylabel('count')
-    plt.plot(countings, label='x')
-    plt.legend()
-    p
+    # PARRONDO GAME
+    print("=======PARRONDO GAME=======")
+    print("Finally, we demonstrate Parrondo's parradox")
+    print("Here, we play Stutzer's game, but the player plays 2 hands at once")
+
+    parrondo_mode = True
+
+    print("")
+    print("Running...")
+    if (run_game() > 0):
+	print("")
+    	print("Notice this is a positive outcome")
+	print("Paradoxically, playing two games at once using the same losing strategy in each yields a positive result")
+	print("This is Parrondo's paradox")
+    else:
+	print("")
+    	print("OOPS; this should have been a positive outcome")
+

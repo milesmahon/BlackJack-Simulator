@@ -16,70 +16,56 @@ Finally, the game demonstrates Parrondo's paradox: the player plays exactly the 
 
 Here's an example of the output:
 
-> ✗ python BlackJack.py strategy/BasicStrategy.csv
+```
+✗ python BlackJack.py strategy/BasicStrategy.csv
 
-> Beginning demonstration of Parrondo's paradox
+Beginning demonstration of Parrondo's paradox
+If you find that the demo is taking too long, you can set GAMES lower, but be aware the results will be much less accurate. We recommend GAMES > 100000
+Each section takes a little under 5 minutes if GAMES == 100000
 
-> If you find that the demo is taking too long, you can set GAMES lower, but be aware the results will be much less accurate. We recommend GAMES > 100000
+=======BASIC GAME=======
 
-> Each section takes a little under 5 minutes if GAMES == 100000
-> 
-> =======BASIC GAME=======
+First, a game of Blackjack:
+Player bets $1 every round. Bets more if count is high.
 
-> First, a game of Blackjack:
+Running...
 
-> Player bets $1 every round. Bets more if count is high.
-> 
-> Running...
->
-> 4228732 hands overall, 42.29 hands per game on average
+4228732 hands overall, 42.29 hands per game on average
+10597915.00 total bet
+Overall winnings: 1000102033.50 (edge = 9436.781 %)
 
-> 10597915.00 total bet
+Notice this is a positive outcome
+The player uses basic strategy and card counting to achieve a positive outcome
 
-> Overall winnings: 1000102033.50 (edge = 9436.781 %)
-> 
-> Notice this is a positive outcome
+=======STUTZER'S GAME=======
 
-> The player uses basic strategy and card counting to achieve a positive outcome
+Next, we demo Michael Stutzer's game:
+Player starts with $10000 and bets 5% of their money each round
 
-> =======STUTZER'S GAME=======
+Running...
 
-> Next, we demo Michael Stutzer's game:
+4228851 hands overall, 42.29 hands per game on average
+3692650329.34 total bet
+Overall winnings: 769210164.85 (edge = -6.250 %)
 
-> Player starts with $10000 and bets 5% of their money each round
-> 
-> Running...
-> 
-> 4228851 hands overall, 42.29 hands per game on average
+Notice this is a negative outcome
+The player uses the same basic strategy and card counting as in the basic game but still has a negative outcome due to their betting strategy
 
-> 3692650329.34 total bet
+=======PARRONDO GAME=======
 
-> Overall winnings: 769210164.85 (edge = -6.250 %)
-> 
-> Notice this is a negative outcome
+Finally, we demonstrate Parrondo's parradox
+Here, we play Stutzer's game, but the player plays 2 hands at once
 
-> The player uses the same basic strategy and card counting as in the basic game but still has a negative outcome due to their betting strategy
+Running...
 
-> =======PARRONDO GAME=======
+2865205 hands overall, 28.65 hands per game on average
+17396475639.19 total bet
+Overall winnings: 3735564888.88 (edge = 15.725 %)
 
-> Finally, we demonstrate Parrondo's parradox
-
-> Here, we play Stutzer's game, but the player plays 2 hands at once
-> 
-> Running...
-> 
-> 2865205 hands overall, 28.65 hands per game on average
-
-> 17396475639.19 total bet
-
-> Overall winnings: 3735564888.88 (edge = 15.725 %)
-> 
-> Notice this is a positive outcome
-
-> Paradoxically, playing two games at once using the same losing strategy in each yields a positive result
-
-> This is Parrondo's paradox
-
+Notice this is a positive outcome
+Paradoxically, playing two games at once using the same losing strategy in each yields a positive result
+This is Parrondo's paradox
+```
 
 
 

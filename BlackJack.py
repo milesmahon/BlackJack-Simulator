@@ -10,7 +10,7 @@ from importer.StrategyImporter import StrategyImporter
 
 SHOE_SIZE = 6
 SHOE_PENETRATION = 0.25
-BET_SPREAD = 20.0
+BET_SPREAD = 19.0
 
 DECK_SIZE = 52.0
 CARDS = {"Ace": 11, "Two": 2, "Three": 3, "Four": 4, "Five": 5, "Six": 6, "Seven": 7, "Eight": 8, "Nine": 9, "Ten": 10, "Jack": 10, "Queen": 10, "King": 10}
@@ -106,7 +106,7 @@ class Shoe(object):
         """
         Returns: The current true count.
         """
-	if db: print self.count / (self.decks * self.shoe_penetration()) 
+	# if db: print self.count / (self.decks * self.shoe_penetration()) 
         return self.count / (self.decks * self.shoe_penetration())
 
     def shoe_penetration(self):
@@ -539,6 +539,28 @@ if __name__ == "__main__":
     strict_rules = True
     card_counting = True
     GAMES = 100000
+
+
+
+	#LOOKING FOR THE BUG THAT SETS BETS TO BE NEGATIVE SOMETIMES!!!! HOW!!!
+    # #PREDEMO SANDBOX
+    # print("=======PREDEMO=======")
+    # stutzer_mode = True
+    # parrondo_mode = True
+    # see_results = True
+    # db = True
+    # run_game()
+
+
+
+
+
+
+
+
+
+
+
     
     # BEGIN DEMO
     

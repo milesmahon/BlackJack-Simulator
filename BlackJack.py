@@ -585,7 +585,7 @@ if __name__ == "__main__":
 	print("The player uses basic strategy and card counting to achieve a positive outcome")
     else:
     	print("")
-    	print("OOPS; this should have been a positive outcome")
+    	print("OOPS, it failed; this should have been a positive outcome. This has never happened before; something's wrong.")
 
     
     # STUTZER GAME
@@ -603,7 +603,7 @@ if __name__ == "__main__":
 	print("The player uses the same basic strategy and card counting as in the basic game but still has a negative outcome due to their betting strategy")
     else:
 	print("")
-    	print("OOPS; this should have been a negative outcome")
+    	print("OOPS, it failed; this should have been a negative outcome. This very rarely fails, so just try again.")
 
 
     # PARRONDO GAME
@@ -622,5 +622,5 @@ if __name__ == "__main__":
 	print("This is Parrondo's paradox")
     else:
 	print("")
-    	print("OOPS; this should have been a positive outcome")
+    	print("OOPS, it failed; this should have been a positive outcome. This fails a little more often than the other games, so try a few more times. It averages out to a positive outcome.")
 
